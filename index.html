@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Climacode - Dados em Tempo Real</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: linear-gradient(180deg, #1e3a8a, #0f172a);
+      color: white;
+      text-align: center;
+      padding: 40px;
+    }
+    .card {
+      background: rgba(255, 255, 255, 0.1);
+      padding: 20px;
+      border-radius: 12px;
+      max-width: 400px;
+      margin: 20px auto;
+      backdrop-filter: blur(8px);
+    }
+    h1 { color: #60a5fa; }
+    .valor { font-size: 2rem; margin: 10px 0; }
+    .hora { color: #93c5fd; font-size: 0.9rem; }
+  </style>
+</head>
+<body>
+  <section>
+    <img 
+      src="https://i.postimg.cc/Jhj3w0GD/Sem-titulo.jpg"
+      alt="Logo ClimaCode"
+      style="max-width:200px; border-radius:10px; margin-bottom:20px;">
+  </section>
+
+  <h1>🌦️ CLIMACODE_OFICIAL</h1>
+  <div class="card">
+    <h2>Temperatura</h2>
+    <p class="valor" id="temp">-- °C</p>
+    <h2>Umidade</h2>
+    <p class="valor" id="hum">-- %</p>
+    <h2>Pressão</h2>
+    <p class="valor" id="press">-- hPa</p>
+    <p class="hora" id="hora">Última atualização: --</p>
+  </div>
+
+  <script>
+    const channelID = "3122719"; // ID do canal no ThingSpeak
+    const url = `https://api.thingspeak.com/channels/${channelID}/feeds/last.json`;
+
+    async function atualizarDados() {
+      try {
+        const res = await fetch(url);
+        const data = await res.json();
+
+        // Mapeie os campos conforme estão configurados no seu canal ThingSpeak
+        const temperatura = data.field1;
+        const umidade = data.field2;
+        const pressao = data.field3;
+        const horaAtual = new Date(data.created_at).toLocaleString("pt-BR");
+
+        document.getElementById("temp").textContent = `${temperatura} °C`;
+        document.getElementById("hum").textContent = `${umidade} %`;
+        document.getElementById("press").textContent = `${pressao} hPa`;
+        document.getElementById("hora").textContent = `Última atualização: ${horaAtual}`;
+      } catch (error) {
+        console.error("Erro ao buscar dados:", error);
+      }
+    }
+
+    // Atualiza a cada 35 segundos
+    setInterval(atualizarDados, 35000);
+    atualizarDados();
+  </script>
+
+  <br>
+  <section>
+    <h3>MAIS INFORMAÇÕES EM BREVE</h3>
+  </section>
+</body>
+</html>
