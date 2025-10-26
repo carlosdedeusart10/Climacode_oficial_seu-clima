@@ -41,6 +41,8 @@
     <p class="valor" id="hum">-- %</p>
     <h2>Pressão</h2>
     <p class="valor" id="press">-- hPa</p>
+    <h2>Previsão de Chuva</h2>
+    <p class="valor" id="chuva">--</p>
     <p class="hora" id="hora">Última atualização: --</p>
   </div>
 
@@ -57,12 +59,25 @@
         const temperatura = data.field1;
         const umidade = data.field2;
         const pressao = data.field3;
+        const previsaoChuva = data.field4; // campo extra para chuva
         const horaAtual = new Date(data.created_at).toLocaleString("pt-BR");
 
         document.getElementById("temp").textContent = `${temperatura} °C`;
         document.getElementById("hum").textContent = `${umidade} %`;
         document.getElementById("press").textContent = `${pressao} hPa`;
         document.getElementById("hora").textContent = `Última atualização: ${horaAtual}`;
+
+        // Exibir previsão de chuva
+        if (previsaoChuva === "1" || previsaoChuva?.toLowerCase() === "sim") {
+          document.getElementById("chuva").textContent = "🌧️ Chuva esperada";
+        } else if (previsaoChuva === "0" || previsaoChuva?.toLowerCase() === "não") {
+          document.getElementById("chuva").textContent = "☀️ Sem chuva prevista";
+        } else if (previsaoChuva) {
+          document.getElementById("chuva").textContent = previsaoChuva;
+        } else {
+          document.getElementById("chuva").textContent = "--";
+        }
+
       } catch (error) {
         console.error("Erro ao buscar dados:", error);
       }
