@@ -1,1 +1,198 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Climacode - Dados em Tempo Real</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: linear-gradient(180deg, #1e3a8a, #0f172a);
+      color: white;
+      text-align: center;
+      padding: 40px;
+      margin: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
 
+    h1 {
+      color: #60a5fa;
+      margin-bottom: 30px;
+    }
+
+    .container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 20px;
+      width: 100%;
+      max-width: 1200px;
+    }
+
+    .card {
+      background: rgba(255, 255, 255, 0.1);
+      padding: 20px;
+      border-radius: 12px;
+      width: 90%;
+      max-width: 400px;
+      backdrop-filter: blur(8px);
+      transition: transform 0.3s ease, background 0.3s ease;
+    }
+
+    .card:hover {
+      transform: scale(1.02);
+      background: rgba(255, 255, 255, 0.15);
+    }
+
+    .valor { font-size: 2rem; margin: 10px 0; }
+    .hora { color: #93c5fd; font-size: 0.9rem; }
+
+    footer {
+      margin-top: 40px;
+      font-size: 0.9rem;
+      color: #cbd5e1;
+    }
+
+    footer a {
+      color: #60a5fa;
+      text-decoration: none;
+    }
+
+    footer a:hover {
+      text-decoration: underline;
+    }
+
+    /* --- Layout especial para telas grandes (PC) --- */
+    @media (min-width: 768px) {
+      .container {
+        flex-direction: row;
+        flex-wrap: wrap;
+        justify-content: center;
+      }
+      .card {
+        max-width: 350px;
+      }
+      h1 {
+        font-size: 2.2rem;
+      }
+    }
+
+    /* --- Tema claro automático --- */
+    @media (prefers-color-scheme: light) {
+      body {
+        background: linear-gradient(180deg, #e0f2ff, #ffffff);
+        color: #0f172a;
+      }
+      .card {
+        background: rgba(0, 0, 0, 0.05);
+      }
+      h1 { color: #1e3a8a; }
+      .hora { color: #1e40af; }
+      footer { color: #334155; }
+      a { color: #2563eb; }
+    }
+  </style>
+</head>
+<body>
+  <section>
+    <img 
+      src="https://i.postimg.cc/Jhj3w0GD/Sem-titulo.jpg"
+      alt="Logo ClimaCode"
+      style="max-width:300px; border-radius:15px; margin-bottom:20px;">
+  </section>
+
+  <h1>🌦️ CLIMACODE_OFICIAL</h1>
+
+  <div class="container">
+    <div class="card">
+      <h2>Temperatura_BMP280</h2>
+      <p class="valor" id="temp">-- °C</p>
+    </div>
+
+    <div class="card">
+      <h2>Temperatura_DHT22</h2>
+      <p class="valor" id="temp2">-- ºC</p>
+    </div>
+
+    <div class="card">
+      <h2>Umidade</h2>
+      <p class="valor" id="hum">-- %</p>
+    </div>
+
+    <div class="card">
+      <h2>Pressão</h2>
+      <p class="valor" id="press">-- hPa</p>
+    </div>
+
+    <div class="card">
+      <h2>Previsão do Tempo</h2>
+      <p class="valor" id="prevtempo">--</p>
+      <p class="hora" id="hora">Última atualização: --</p>
+    </div>
+  </div>
+
+  <br>
+  <section>
+    <h3>OS DADOS SERÃO ATUALIZADOS EM SEGUNDOS, AGUARDE...</h3>
+  </section>
+
+  <footer>
+    <p>&copy; 2025 Projeto CLIMACODE | Instituto Federal da Bahia</p>
+    <p>Desenvolvido por 
+      <a href="https://www.instagram.com/carlosdedeus_art_1.0" target="_blank">
+        @carlosdedeus_art_1.0
+      </a>
+    </p>
+  </footer>
+
+  <script>
+    const channelID = "3122719"; // ID do canal no ThingSpeak
+    const url = `https://api.thingspeak.com/channels/${channelID}/feeds/last.json`;
+
+    async function atualizarDados() {
+      try {
+        const res = await fetch(url);
+        const data = await res.json();
+
+        const temperatura = parseFloat(data.field1);
+        const temperatura2 = parseFloat(data.field2);
+        const umidade = parseFloat(data.field3);
+        const horaAtual = new Date(data.created_at).toLocaleString("pt-BR");
+        const pressao = parseFloat(data.field4);
+        
+        document.getElementById("temp").textContent = `${temperatura.toFixed(2)} °C`;
+        document.getElementById("temp2").textContent = `${temperatura2.toFixed(2)} ºC`;
+        document.getElementById("hum").textContent = `${umidade.toFixed(2)} %`;
+        document.getElementById("hora").textContent = `Última atualização: ${horaAtual}`;
+        document.getElementById("press").textContent = `${pressao.toFixed(2)} hPa`;
+
+        const previsaoTexto = calcularPrevisao(umidade, pressao);
+        document.getElementById("prevtempo").textContent = previsaoTexto;
+      } catch (error) {
+        console.error("Erro ao buscar dados:", error);
+      }
+    }
+
+    function calcularPrevisao(umidade, pressao) {
+      if (isNaN(umidade) || isNaN(pressao)) return "--";
+
+      if (pressao < 1000 && umidade > 80) {
+        return "🌧️ Alta chance de chuva (90%)";
+      } else if (pressao < 1010 && umidade > 70) {
+        return "☁️ Tempo nublado, possibilidade de garoa";
+      } else if (pressao > 1020 && umidade < 60) {
+        return "☀️ Tempo ensolarado e seco";
+      } else if (pressao >= 1010 && pressao <= 1020 && umidade >= 50 && umidade <= 70) {
+        return "🌤️ Tempo estável com poucas nuvens";
+      } else {
+        return "⛅ Parcialmente Nublado";
+      }
+    }
+
+    setInterval(atualizarDados, 15000);
+    atualizarDados();
+  </script>
+</body>
+</html>
